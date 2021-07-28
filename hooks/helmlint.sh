@@ -3,18 +3,29 @@
 set -e
 
 # Run helm lint on the chart path.
-# A typical helm chart directory structure looks as follows:
 #
-# └── root
-#     ├── README.md
-#     ├── Chart.yaml
-#     ├── charts
-#     │   └── postgres-9.5.6.tar.gz
-#     └── templates
-#         ├── deployment.yaml
-#         ├── service.yaml
-#         └── _helpers.tpl
-#
+# Our helm chart structure looks similar to this: 
+# └── project-name
+#   └── helm
+#     └── first deployment-name
+#         ├── README.md
+#         ├── Chart.yaml
+#         ├── charts
+#         │   └── postgres-9.5.6.tar.gz
+#         └── templates
+#             ├── deployment.yaml
+#             ├── service.yaml
+#             └── _helpers.tpl
+#     └── second deployment-name
+#         ├── README.md
+#         ├── Chart.yaml
+#         ├── charts
+#         │   └── postgres-9.5.6.tar.gz
+#         └── templates
+#             ├── deployment.yaml
+#             ├── service.yaml
+#             └── _helpers.tpl
+
 # The `Chart.yaml` file is metadata that helm uses to index the chart, and is added to the release info. It includes things
 # like `name`, `version`, and `maintainers`.
 # The `charts` directory are subcharts / dependencies that are deployed with the chart.
@@ -59,6 +70,10 @@ debug() {
   fi
 }
 
+info() {
+  >&2 echo "$@"
+}
+
 # Recursively walk up the tree until the current working directory and check if the changed file is part of a helm
 # chart. Helm charts have a Chart.yaml file.
 chart_path() {
@@ -68,32 +83,32 @@ chart_path() {
   local -r changed_file_abspath="$(realpath "$changed_file")"
   local -r changed_file_dir="$(dirname "$changed_file_abspath")"
 
-  debug "Checking directory $changed_file_abspath and $changed_file_dir for Chart.yaml"
+  info "Checking directory $changed_file_abspath and $changed_file_dir for Chart.yaml"
 
   # Base case: we have walked to the top of dir tree
   if [[ "$changed_file_abspath" == "$cwd_abspath" ]]; then
-    debug "No chart path found"
+    info "No chart path found"
     echo ""
     return 0
   fi
 
   # The changed file is itself the helm chart indicator, Chart.yaml
   if [[ "$(basename "$changed_file_abspath")" == "Chart.yaml" ]]; then
-    debug "Chart path found: $changed_file_dir"
+    info "Chart path found: $changed_file_dir"
     echo "$changed_file_dir"
     return 0
   fi
 
   # The changed_file is the directory containing the helm chart package file
   if [[ -f "$changed_file_abspath/Chart.yaml" ]]; then
-    debug "Chart path found: $changed_file_abspath"
+    info "Chart path found: $changed_file_abspath"
     echo "$changed_file_abspath"
     return 0
   fi
 
   # The directory of changed_file is the directory containing the helm chart package file
   if [[ -f "$changed_file_dir/Chart.yaml" ]]; then
-    debug "Chart path found: $changed_file_dir"
+    info "Chart path found: $changed_file_dir"
     echo "$changed_file_dir"
     return 0
   fi
@@ -106,9 +121,9 @@ chart_path() {
 seen_chart_paths=()
 
 for file in "$@"; do
-  debug "Checking $file"
+  info "Checking $file"
   file_chart_path=$(chart_path "$file")
-  debug "Resolved $file to chart path $file_chart_path"
+  info "Resolved $file to chart path $file_chart_path"
 
   # The chart values.yaml file may not have all the values defined to enforce default values, which will cause the
   # linter to fail. To support this, this pre-commit hook looks for a special values file called `linter_values.yaml`
@@ -121,7 +136,7 @@ for file in "$@"; do
 
   if [[ ! -z "$file_chart_path" ]]; then
     if contains_element "$file_chart_path" "${seen_chart_paths[@]}"; then
-      debug "Already linted $file_chart_path"
+      info "Already linted $file_chart_path"
     elif [[ -z "$linter_values_arg" ]]; then
       helm lint "$file_chart_path"
       seen_chart_paths+=( "$file_chart_path" )
