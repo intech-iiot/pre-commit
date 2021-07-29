@@ -5,21 +5,11 @@
 This repo defines Git pre-commit hooks intended for use with [pre-commit](http://pre-commit.com/). The currently
 supported hooks are:
 
-* **terraform-fmt**: Automatically run `terraform fmt` on all Terraform code (`*.tf` files).
-* **terraform-validate**: Automatically run `terraform validate` on all Terraform code (`*.tf` files).
-* **terragrunt-hclfmt**: Automatically run `terragrunt hclfmt` on all Terragrunt configurations.
-* **tflint**: Automatically run [`tflint`](https://github.com/terraform-linters/tflint) on all Terraform code (`*.tf` files).
-* **shellcheck**: Run [`shellcheck`](https://www.shellcheck.net/) to lint files that contain a bash [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)).
-* **gofmt**: Automatically run `gofmt` on all Golang code (`*.go` files).
-* **goimports**: Automatically run `goimports` on all Golang code (`*.go` files).
-* **golint**: Automatically run `golint` on all Golang code (`*.go` files).
-* **yapf**: Automatically run [`yapf`](https://github.com/google/yapf) on all python code (`*.py` files).
-* **helmlint** Automatically run [`helm lint`](https://github.com/helm/helm/blob/master/docs/helm/helm_lint.md) on your Helm chart files. [See caveats here](#helm-lint-caveats).
-* **markdown-link-check** Automatically run [markdown-link-check](https://github.com/tcort/markdown-link-check) on
+- **gofmt**: Automatically run `gofmt` on all Golang code (`*.go` files).
+- **goimports**: Automatically run `goimports` on all Golang code (`*.go` files).
+- **golint**: Automatically run `golint` on all Golang code (`*.go` files).
+- **helmlint** Automatically run [`helm lint`](https://github.com/helm/helm/blob/master/docs/helm/helm_lint.md) on your Helm chart files. [See caveats here](#helm-lint-caveats).
   markdown doc files.
-
-
-
 
 ## General Usage
 
@@ -38,18 +28,14 @@ repos:
       - id: golint
 ```
 
-Next, have every developer: 
+Next, have every developer:
 
 1. Install [pre-commit](http://pre-commit.com/). E.g. `brew install pre-commit`.
 1. Run `pre-commit install` in the repo.
 
 That’s it! Now every time you commit a code change (`.tf` file), the hooks in the `hooks:` config will execute.
 
-
-
-
 ## Running Against All Files At Once
-
 
 ### Example: Formatting all files
 
@@ -58,8 +44,6 @@ If you'd like to format all of your code at once (rather than one file at a time
 ```bash
 pre-commit run terraform-fmt --all-files
 ```
-
-
 
 ### Example: Enforcing in CI
 
@@ -74,9 +58,6 @@ pre-commit run --all-files
 
 If all the hooks pass, the last command will exit with an exit code of 0. If any of the hooks make changes (e.g.,
 because files are not formatted), the last command will exit with a code of 1, causing the build to fail.
-
-
-
 
 ## Helm Lint Caveats
 
@@ -126,21 +107,6 @@ Now when the pre-commit hook runs, it will call `helm lint` with both `linter_va
 ```
 helm lint -f values.yaml -f linter_values.yaml .
 ```
-
-## Shellcheck Arguments
-
-To enable optional shellcheck features you can use the `--enable` flag.
-Other shellcheck flags can not be passed through.
-
-```yaml
-repos:
-  - repo: https://github.com/gruntwork-io/pre-commit
-    rev: <VERSION>
-    hooks:
-      - id: shellcheck
-        args: ["--enable require-variable-braces,deprecate-which"]
-```
-
 
 ## License
 
